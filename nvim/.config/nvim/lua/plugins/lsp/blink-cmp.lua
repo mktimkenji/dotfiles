@@ -83,7 +83,7 @@ return {
     },
 
     sources = {
-      default = { "lsp", "snippets", "path", "buffer" },
+      default = { "lsp", "snippets", "dadbod", "path", "buffer" },
       providers = {
         lsp = {
           score_offset = 90,
@@ -91,6 +91,11 @@ return {
         snippets = {
           score_offset = 80,
           min_keyword_length = 2,
+        },
+        dadbod = {
+          name = "Dadbod",
+          module = "vim_dadbod_completion.blink",
+          score_offset = 75,
         },
         path = {
           score_offset = 70,
