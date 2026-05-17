@@ -33,6 +33,7 @@ return {
         "pyright",
         "rust_analyzer",
         "sqlls",
+        "taplo",
         "ts_ls",
         "yamlls",
       },

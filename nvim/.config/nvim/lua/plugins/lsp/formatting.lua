@@ -20,6 +20,7 @@ return {
         xml = { "prettier" },
         yaml = { "prettier" },
         markdown = { "prettier" },
+        toml = { "taplo" },
 
         -- Systems
         c = { "clang-format" },
