@@ -271,6 +271,7 @@ config.cursor_blink_ease_out = "Constant"
 
 config.adjust_window_size_when_changing_font_size = false
 config.enable_kitty_graphics = true
+config.font = "JetBrainsMono Nerd Font"
 config.font_size = 17
 config.max_fps = 120
 config.scrollback_lines = 10000
