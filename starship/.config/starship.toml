@@ -1,0 +1,136 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# ==========================================
+# PROMPT ARCHITECTURE
+# ==========================================
+format = """
+$cmd_duration
+$os$directory$git_branch$git_status
+$character"""
+
+right_format = """$all"""
+
+[line_break]
+disabled = true
+
+# ==========================================
+# BETTER SYMBOLS
+# ==========================================
+[aws]
+symbol = " "
+format = "[$symbol($profile )(\\($region\\) )(\\[$duration\\] )]($style)"
+
+[azure]
+symbol = " "
+format = "[$symbol($subscription)]($style) "
+
+[bun]
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+[c]
+symbol = " "
+format = "[$symbol($version(-$name) )]($style)"
+
+[cpp]
+symbol = "++ "
+format = "[$symbol($version(-$name) )]($style)"
+
+[docker_context]
+symbol = " "
+format = "[$symbol$context]($style) "
+
+[git_commit]
+tag_symbol = '  '
+
+[gradle]
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+[hostname]
+ssh_symbol = " "
+
+[java]
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+[kotlin]
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+[lua]
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+[maven]
+symbol = " "
+format = "[$symbol($version )]($style)"
+
+[nix_shell]
+symbol = " "
+format = "[$symbol$state( \\($name\\))]($style) "
+
+[nodejs]
+symbol = "󰎙 "
+format = "[$symbol($version )]($style)"
+
+[os.symbols]
+AlmaLinux = " "
+Arch = " "
+Artix = " "
+CachyOS = " "
+Debian = " "
+EndeavourOS = " "
+Fedora = " "
+Garuda = " "
+Linux = " "
+Macos = " "
+NixOS = " "
+Nobara = " "
+openSUSE = " "
+OracleLinux = "󰺡 "
+Pop = " "
+Redhat = "󱄛 "
+RedHatEnterprise = "󱄛 "
+Ubuntu = " "
+Windows = "󰍲 "
+
+[python]
+symbol = " "
+format = "[${symbol}${pyenv_prefix}(${version} )(\\($virtualenv\\) )]($style)"
+
+[rust]
+symbol = "󱘗 "
+format = "[$symbol($version )]($style)"
+
+# ==========================================
+# LEFT SIDE CONFIG
+# ==========================================
+[os]
+disabled = false
+format = "[$symbol]($style)"
+style = "bold"
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+style = "bold fg:blue"
+read_only = " 󰌾"
+
+[git_branch]
+style = "bold fg:white"
+format = "on [$symbol$branch]($style) "
+symbol = " "
+
+[git_status]
+style = "bold red"
+format = '([$all_status$ahead_behind]($style) )'
+
+[cmd_duration]
+min_time = 2000
+format = "[$duration]($style)"
+style = "bold fg:green"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
