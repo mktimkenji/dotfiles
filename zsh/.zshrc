@@ -109,7 +109,7 @@ alias tree="eza -a --tree --icons --level=5"
 # ==========================================
 alias df="df -h"
 alias free="free -h"
-alias find="fd"
+alias fd="fd --hidden"
 alias mkdir="mkdir -p"
 alias cp="cp -i"
 alias mv="mv -i"
