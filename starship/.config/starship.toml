@@ -123,14 +123,14 @@ format = "on [$symbol$branch]($style) "
 symbol = " "
 
 [git_status]
-style = "bold red"
+style = "bold fg:red"
 format = '([$all_status$ahead_behind]($style) )'
 
 [cmd_duration]
 min_time = 2000
 format = "[$duration]($style)"
-style = "bold fg:green"
+style = "bold fg:purple"
 
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
+success_symbol = "[❯](bold fg:green)"
+error_symbol = "[❯](bold fg:red)"
