@@ -105,7 +105,7 @@ return {
                 "org.mockito.Mockito.*",
                 "org.mockito.ArgumentMatchers.*",
               },
-              importOrder = { "java", "javax", "io", "org", "com" },
+              importOrder = { "com", "java", "javax", "io", "org" },
             },
             sources = {
               organizeImports = {
@@ -116,7 +116,7 @@ return {
             configuration = {
               runtimes = {
                 {
-                  name = "JavaSE-21",
+                  name = "JavaSE-25",
                   path = find_java_runtime(),
                   default = true,
                 },
