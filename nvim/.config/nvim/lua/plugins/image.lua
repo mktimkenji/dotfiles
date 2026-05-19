@@ -12,6 +12,7 @@ return {
       "*.gif",
       "*.webp",
       "*.avif",
+      "*.svg",
     },
   },
 }
