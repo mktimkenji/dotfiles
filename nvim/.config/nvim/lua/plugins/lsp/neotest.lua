@@ -56,7 +56,7 @@ return {
           child_indent = "│",
           child_prefix = "├",
           final_child_prefix = "└",
-          final_child_indent = " ",
+          final_child_indent = "│",
           non_collapsible = "─",
         },
 
