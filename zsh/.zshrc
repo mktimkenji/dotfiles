@@ -173,3 +173,27 @@ extract() {
     return 1
   fi
 }
+
+# ==========================================
+# 13. TOOLING
+# ==========================================
+# Bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+# SDKMAN
+if [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]]; then
+  export SDKMAN_DIR="$HOME/.sdkman"
+  source "$SDKMAN_DIR/bin/sdkman-init.sh"
+fi
+
+# fnm
+if command -v fnm >/dev/null 2>&1; then
+  eval "$(fnm env --use-on-cd --shell zsh)"
+fi
+
+# pnpm
+if [[ -d "$HOME/.local/share/pnpm" ]]; then
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+  path=("$PNPM_HOME" $path)
+fi
