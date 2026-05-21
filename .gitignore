@@ -1,0 +1,3 @@
+*.env
+*.bootstrap_log
+*.bootstrap_complete
