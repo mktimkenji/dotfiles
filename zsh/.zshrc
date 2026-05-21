@@ -72,10 +72,10 @@ function zvm_after_init() {
   bindkey '^E' end-of-line                # Ctrl+E
 }
 
-# Start in insert mode (default is also insert, but explicit is clearer)
+# Start in insert mode by default
 ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
 
-# Cursor style per mode — ZVM handles this automatically but you can override
+# Cursor style per mode
 ZVM_INSERT_MODE_CURSOR=$ZVM_CURSOR_BEAM
 ZVM_NORMAL_MODE_CURSOR=$ZVM_CURSOR_BLOCK
 ZVM_VISUAL_MODE_CURSOR=$ZVM_CURSOR_BLOCK
@@ -83,6 +83,7 @@ ZVM_VISUAL_MODE_CURSOR=$ZVM_CURSOR_BLOCK
 # ==========================================
 # 6. INITIALIZE MODERN CLI TOOLS
 # ==========================================
+source "$HOME/.cargo/env"
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 
@@ -196,4 +197,9 @@ fi
 if [[ -d "$HOME/.local/share/pnpm" ]]; then
   export PNPM_HOME="$HOME/.local/share/pnpm"
   path=("$PNPM_HOME" $path)
+fi
+
+# Run fastfetch as initial command
+if command -v fastfetch >/dev/null 2>&1; then
+  fastfetch
 fi
