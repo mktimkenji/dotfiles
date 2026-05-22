@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# bootstrap.sh — Linux worker script
+# bootstrap.sh - Linux worker script
 # Invoked once by bootstrap.ps1 via a single wsl.exe call.
 # Can also be run standalone for the Linux phases only.
 # ============================================================
@@ -9,6 +9,8 @@ set -euo pipefail
 # ── Argument parsing ──────────────────────────────────────────────────────────
 GIT_NAME=""
 GIT_EMAIL=""
+GIT_CREDENTIAL_HELPER=""
+WSL_PASSWORD=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -20,17 +22,20 @@ while [[ $# -gt 0 ]]; do
     GIT_EMAIL="$2"
     shift 2
     ;;
+  --git-credential-helper)
+    GIT_CREDENTIAL_HELPER="$2"
+    shift 2
+    ;;
+  --password)
+    WSL_PASSWORD="$2"
+    shift 2
+    ;;
   *)
     echo "[XX] Unknown argument: $1"
     exit 1
     ;;
   esac
 done
-
-if [[ -z "$GIT_NAME" || -z "$GIT_EMAIL" ]]; then
-  echo "[XX] --git-name and --git-email are required."
-  exit 1
-fi
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 DOTFILES_DIR="$HOME/dotfiles"
@@ -40,10 +45,10 @@ LOG="$DOTFILES_DIR/.bootstrap_log"
 # ── Logging helpers ───────────────────────────────────────────────────────────
 log() { echo "$(date '+%Y-%m-%d %H:%M:%S')  $*" | tee -a "$LOG"; }
 phase() {
-  echo ""
-  echo "══════════════════════════════════════════" | tee -a "$LOG"
+  echo "" | tee -a "$LOG"
+  echo "==========================================" | tee -a "$LOG"
   echo "  $*" | tee -a "$LOG"
-  echo "══════════════════════════════════════════" | tee -a "$LOG"
+  echo "==========================================" | tee -a "$LOG"
 }
 ok() { echo "  [OK] $*" | tee -a "$LOG"; }
 skip() { echo "  [--] $*" | tee -a "$LOG"; }
@@ -51,40 +56,37 @@ warn() { echo "  [!!] $*" | tee -a "$LOG"; }
 fail() { echo "  [XX] $*" | tee -a "$LOG"; }
 
 # ── Error trap ────────────────────────────────────────────────────────────────
-trap 'fail "Script failed at line $LINENO — check $LOG for details."' ERR
+trap 'fail "Script failed at line $LINENO - check $LOG for details."' ERR
+
+# ── Idempotency helpers ───────────────────────────────────────────────────────
+is_installed() { command -v "$1" &>/dev/null; }
+dnf_installed() { rpm -q "$1" &>/dev/null; }
 
 # ── Sentinel guard ────────────────────────────────────────────────────────────
 phase "Checking bootstrap sentinel"
 if [[ -f "$SENTINEL" ]]; then
   fail "Sentinel file found at $SENTINEL"
   fail "Bootstrap appears to have already completed."
-  warn "Delete .bootstrap_complete manually if you intentionally want to re-run."
+  warn "Delete .bootstrap_complete manually if you want to re-run."
   exit 1
 fi
-ok "No sentinel found — proceeding."
-log "Bootstrap started. git-name='$GIT_NAME' git-email='$GIT_EMAIL'"
+ok "No sentinel found - proceeding."
+log "Bootstrap started. user=$(whoami) git-name='$GIT_NAME' git-email='$GIT_EMAIL'"
 
-# ── Idempotency helper ────────────────────────────────────────────────────────
-# Usage: is_installed <command>
-is_installed() { command -v "$1" &>/dev/null; }
-
-# Usage: dnf_installed <package>
-dnf_installed() { rpm -q "$1" &>/dev/null; }
-
-# ── Phase 5: DNF system update ────────────────────────────────────────────────
-phase "Phase 5 — System update"
+# ── Phase 5: System update ────────────────────────────────────────────────────
+phase "Phase 5 - System update"
 sudo dnf upgrade --refresh -y
 ok "System updated."
 log "PHASE 5 DONE: system update"
 
-# ── Phase 6: DNF dev toolchain ───────────────────────────────────────────────
-phase "Phase 6 — Dev toolchain (dnf)"
+# ── Phase 6: Dev toolchain (dnf) ─────────────────────────────────────────────
+phase "Phase 6 - Dev toolchain (dnf)"
 
 DEV_PKGS=(
   gcc gcc-c++ make cmake clang
   gawk
   luarocks
-  pipx
+  python3-devel pipx
   rustup
   openssl openssl-devel
   docker
@@ -101,8 +103,8 @@ done
 
 log "PHASE 6 DONE: dev toolchain"
 
-# ── Phase 7: DNF CLI tools ────────────────────────────────────────────────────
-phase "Phase 7 — CLI tools (dnf)"
+# ── Phase 7: CLI tools (dnf) ──────────────────────────────────────────────────
+phase "Phase 7 - CLI tools (dnf)"
 
 CLI_PKGS=(
   zsh stow
@@ -121,7 +123,7 @@ for pkg in "${CLI_PKGS[@]}"; do
   fi
 done
 
-# Neovim — install without weak deps to avoid pulling bundled nodejs/tree-sitter
+# Neovim - skip weak deps to avoid pulling bundled nodejs and tree-sitter-cli
 if dnf_installed "neovim"; then
   skip "neovim already installed."
 else
@@ -151,31 +153,28 @@ fi
 log "PHASE 7 DONE: CLI tools"
 
 # ── Phase 8: Git configuration ────────────────────────────────────────────────
-phase "Phase 8 — Git configuration"
+phase "Phase 8 - Git configuration"
 
-git config --global user.name "$GIT_NAME"
-git config --global user.email "$GIT_EMAIL"
+[[ -n "$GIT_NAME" ]] && git config --global user.name "$GIT_NAME" && ok "Git user.name set." || warn "GIT_NAME empty - skipping."
+[[ -n "$GIT_EMAIL" ]] && git config --global user.email "$GIT_EMAIL" && ok "Git user.email set." || warn "GIT_EMAIL empty - skipping."
+
 git config --global init.defaultBranch main
 git config --global pull.rebase false
 git config --global core.editor nvim
 
-# Bridge to Windows Git Credential Manager for HTTPS work repos
-GCM_PATH="/mnt/c/Program Files/Git/mingw64/bin/git-credential-manager.exe"
-if [[ -f "$GCM_PATH" ]]; then
-  git config --global credential.helper "$GCM_PATH"
+if [[ -n "$GIT_CREDENTIAL_HELPER" && -f "$GIT_CREDENTIAL_HELPER" ]]; then
+  git config --global credential.helper "$GIT_CREDENTIAL_HELPER"
   ok "Git credential helper set to Windows GCM."
 else
-  warn "Windows GCM not found at expected path — credential helper not configured."
-  warn "Set it manually later: git config --global credential.helper <path>"
+  warn "GCM not configured - set git credential.helper manually for HTTPS work repos."
 fi
 
-ok "Git globals configured."
 log "PHASE 8 DONE: git configuration"
 
 # ── Phase 9: Curl-based installers ───────────────────────────────────────────
-phase "Phase 9 — Curl-based installers"
+phase "Phase 9 - Curl-based installers"
 
-# Rustup (rustup is installed from dnf, just needs initialising)
+# Rustup - installed from dnf, just needs initialising
 if ! is_installed rustc; then
   rustup-init -y --no-modify-path
   # shellcheck source=/dev/null
@@ -208,14 +207,14 @@ else
 fi
 
 # Bun
-if ! is_installed bun; then
+if [[ ! -d "$HOME/.bun/bin" ]]; then
   curl -fsSL https://bun.sh/install | bash
   ok "Bun installed."
 else
   skip "Bun already installed."
 fi
 
-# pipx path
+# Misc: pipx path and smassh
 pipx ensurepath
 if ! is_installed smassh; then
   pipx install smassh
@@ -227,20 +226,30 @@ fi
 log "PHASE 9 DONE: curl-based installers"
 
 # ── Phase 10: Cargo builds ────────────────────────────────────────────────────
-phase "Phase 10 — Cargo builds"
+phase "Phase 10 - Cargo builds"
 
-# Remove any dnf-installed tree-sitter-cli that neovim may have pulled in
-if dnf_installed "tree-sitter-cli"; then
-  sudo dnf remove -y tree-sitter-cli
-  warn "Removed dnf tree-sitter-cli (replaced by cargo version)."
+# Rustup - installed from dnf, just needs initialising
+if ! is_installed rustc; then
+  rustup-init -y --no-modify-path
+  # shellcheck source=/dev/null
+  source "$HOME/.cargo/env"
+  cargo install cargo-update --locked
+  ok "Rust toolchain initialised."
+else
+  skip "Rust already initialised."
+  # shellcheck source=/dev/null
+  source "$HOME/.cargo/env" 2>/dev/null || true
 fi
 
-# shellcheck source=/dev/null
-source "$HOME/.cargo/env"
+# Remove any dnf tree-sitter-cli pulled in as a neovim weak dep
+if dnf_installed "tree-sitter-cli"; then
+  sudo dnf remove -y tree-sitter-cli
+  warn "Removed dnf tree-sitter-cli - cargo version takes precedence."
+fi
 
 cargo_install() {
   local pkg="$1"
-  if cargo install --list | rg -q "^$pkg "; then
+  if cargo install --list | grep -q "^$pkg "; then
     skip "$pkg already installed via cargo."
   else
     cargo install "$pkg" --locked
@@ -254,13 +263,13 @@ cargo_install fnm
 
 log "PHASE 10 DONE: cargo builds"
 
-# ── Phase 11: Node.js ecosystem ───────────────────────────────────────────────
-phase "Phase 11 — Node.js (fnm)"
+# ── Phase 11: Node.js (fnm) ───────────────────────────────────────────────────
+phase "Phase 11 - Node.js (fnm)"
 
-# Eval fnm for this session so node/npm become available immediately
+# Eval fnm into this session so node/npm are immediately on PATH
 eval "$(fnm env --use-on-cd)"
 
-if ! fnm list | rg -q "lts"; then
+if ! fnm list | grep -q "lts"; then
   fnm install --lts
   ok "Node LTS installed via fnm."
 else
@@ -268,25 +277,32 @@ else
 fi
 
 fnm use lts-latest
-eval "$(fnm env)"
+eval "$(fnm env)" # re-eval so node/npm are live in this session now
 
+npm install -g npm@latest
 corepack enable pnpm
+pnpm setup || true
+pnpm add -g pnpm@latest
 
 ok "Node ecosystem ready."
 log "PHASE 11 DONE: Node.js ecosystem"
 
-# ── Phase 12: JVM ecosystem ───────────────────────────────────────────────────
-phase "Phase 12 — JVM (SDKMAN)"
+# ── Phase 12: JVM (SDKMAN) ───────────────────────────────────────────────────
+phase "Phase 12 - JVM (SDKMAN)"
 
-# Source SDKMAN for this session
 export SDKMAN_DIR="$HOME/.sdkman"
+set +u
 # shellcheck disable=SC1091
 source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
 sdk_install() {
   local pkg="$1"
-  sdk install "$pkg"
-  ok "$pkg installed."
+  if sdk list "$pkg" 2>/dev/null | grep -q "installed"; then
+    skip "$pkg already installed via sdk."
+  else
+    sdk install "$pkg"
+    ok "$pkg installed."
+  fi
 }
 
 sdk_install java
@@ -295,13 +311,15 @@ sdk_install gradle
 sdk_install groovy
 sdk_install kotlin
 
+set -u
 log "PHASE 12 DONE: JVM ecosystem"
 
-# ── Phase 13: Change default shell ────────────────────────────────────────────
-phase "Phase 13 — Default shell"
+# ── Phase 13: Change default shell ───────────────────────────────────────────
+phase "Phase 13 - Default shell"
 
-if [[ "$SHELL" != "/bin/zsh" ]]; then
-  chsh -s /bin/zsh
+if [[ "$(getent passwd "$(whoami)" | cut -d: -f7)" != "/bin/zsh" ]]; then
+  # usermod bypasses PAM - no password prompt
+  sudo usermod -s /bin/zsh "$(whoami)"
   ok "Default shell changed to zsh."
 else
   skip "Default shell is already zsh."
@@ -310,22 +328,21 @@ fi
 log "PHASE 13 DONE: default shell"
 
 # ── Phase 14: Stow dotfiles ───────────────────────────────────────────────────
-phase "Phase 14 — Stow dotfiles"
+phase "Phase 14 - Stow dotfiles"
 
 cd "$DOTFILES_DIR"
 
 stow_package() {
   local pkg="$1"
-  # Stow exits non-zero if there are conflicts; check first
   if stow --simulate "$pkg" &>/dev/null; then
     stow "$pkg"
     ok "stow: $pkg"
   else
-    warn "stow: $pkg has conflicts — skipping. Resolve manually and re-stow."
+    warn "stow: $pkg has conflicts - skipping. Resolve manually and re-stow."
   fi
 }
 
-# Remove default .zshrc if it's a plain file (not a symlink we manage)
+# Move default .zshrc out of the way if it's not already our symlink
 if [[ -f "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
   mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
   warn "Moved existing .zshrc to .zshrc.bak"
@@ -337,9 +354,27 @@ stow_package nvim
 stow_package tealdeer
 
 # shellcheck disable=SC2015
-tldr --update && ok "tealdeer cache updated." || warn "tldr --update failed — run manually."
+tldr --update && ok "tealdeer cache updated." || warn "tldr --update failed - run manually."
 
 log "PHASE 14 DONE: stow"
+
+# ── Phase 15: Set user password ───────────────────────────────────────────────
+phase "Phase 15 - Set user password"
+
+if [[ -n "$WSL_PASSWORD" ]]; then
+  echo "$(whoami):$WSL_PASSWORD" | sudo chpasswd
+  ok "Password set for $(whoami)."
+else
+  warn "No password provided - account remains passwordless. Set manually with: passwd"
+fi
+
+log "PHASE 15 DONE: password set"
+
+# Phase 16 - Restore sudo password requirement
+phase "Phase 16 - Restore sudo security"
+sudo rm -f "/etc/sudoers.d/$USER"
+ok "NOPASSWD sudo removed - password required for sudo from now on."
+log "PHASE 16 DONE: sudo security restored"
 
 # ── Write sentinel ────────────────────────────────────────────────────────────
 echo "Bootstrap completed at $(date)" >"$SENTINEL"
@@ -347,5 +382,6 @@ log "Sentinel written. Bootstrap complete."
 
 phase "All done"
 echo ""
-echo "  Restart WezTerm to pick up the new config."
+echo "  Linux bootstrap completed successfully."
+echo "  Returning to Windows script for final steps..."
 echo ""
