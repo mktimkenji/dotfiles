@@ -3,10 +3,11 @@
 My personal development environment configuration, managed with
 [GNU Stow](https://www.gnu.org/software/stow/).
 
-This is tailored and heavily opinionated entirely for my own workflow and needs
-— it's a living personal reference as much as it is a repo. That said,
-everything here is open source and you're welcome to take inspiration, copy, or
-use the bootstrap scripts as you wish for your own setup.
+This is tailored and heavily opinionated entirely for my own workflow and needs,
+and mostly exists as a personal reference that I will keep on iterating over
+time. Most of this is shaped by the ideas, tools, and configs shared by the
+community. Feel free to take inspiration, copy, or use the bootstrap scripts as
+you wish for your own setup.
 
 ---
 
