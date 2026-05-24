@@ -279,7 +279,8 @@ fi
 fnm use lts-latest
 eval "$(fnm env)" # re-eval so node/npm are live in this session now
 
-corepack enable pnpm
+corepack enable
+corepack prepare pnpm --activate
 
 ok "Node ecosystem ready."
 log "PHASE 11 DONE: Node.js ecosystem"

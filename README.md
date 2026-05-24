@@ -147,7 +147,8 @@ Doomscroll. The script will:
 5. Hand off to `bootstrap.sh` for all Linux setup
 6. Prompt once for UAC to create the WezTerm config symlink
 
-Total runtime is roughly 30–60 minutes depending on network speed.
+Total runtime is roughly 30–60 minutes depending on network speed, including
+first Neovim and zsh initializations.
 
 ---
 
