@@ -249,7 +249,7 @@ fi
 
 cargo_install() {
   local pkg="$1"
-  if cargo install --list | grep -q "^$pkg "; then
+  if cargo install --list | rg -q "^$pkg "; then
     skip "$pkg already installed via cargo."
   else
     cargo install "$pkg" --locked
@@ -269,7 +269,7 @@ phase "Phase 11 - Node.js (fnm)"
 # Eval fnm into this session so node/npm are immediately on PATH
 eval "$(fnm env --use-on-cd)"
 
-if ! fnm list | grep -q "lts"; then
+if ! fnm list | rg -q "lts"; then
   fnm install --lts
   ok "Node LTS installed via fnm."
 else
@@ -295,7 +295,7 @@ source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
 sdk_install() {
   local pkg="$1"
-  if sdk list "$pkg" 2>/dev/null | grep -q "installed"; then
+  if [[ -d "$SDKMAN_DIR/candidates/$pkg" ]]; then
     skip "$pkg already installed via sdk."
   else
     sdk install "$pkg"
@@ -340,10 +340,10 @@ stow_package() {
   fi
 }
 
-# Move default .zshrc out of the way if it's not already our symlink
+# Remove default .zshrc
 if [[ -f "$HOME/.zshrc" && ! -L "$HOME/.zshrc" ]]; then
-  mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
-  warn "Moved existing .zshrc to .zshrc.bak"
+  rm "$HOME/.zshrc"
+  warn "Removed pre-existing .zshrc"
 fi
 
 stow_package zsh
