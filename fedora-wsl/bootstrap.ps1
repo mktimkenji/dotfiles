@@ -242,6 +242,11 @@ if ($GitExe) {
     if (Test-Path $GcmPath) {
         $ErrorActionPreference = "Continue"
         $GcmWslPath = (wsl -d $WslDistro -- wslpath -u "$GcmPath" 2>$null).Trim()
+
+        if ($GcmWslPath) {
+          $GcmWslPath = "!`"$GcmWslPath`""
+        }
+
         $ErrorActionPreference = "Stop"
         Write-Ok "GCM found - will configure in WSL."
     } else {

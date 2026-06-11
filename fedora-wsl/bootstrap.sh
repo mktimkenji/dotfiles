@@ -162,11 +162,11 @@ git config --global init.defaultBranch main
 git config --global pull.rebase false
 git config --global core.editor nvim
 
-if [[ -n "$GIT_CREDENTIAL_HELPER" && -f "$GIT_CREDENTIAL_HELPER" ]]; then
+if [[ -n "$GIT_CREDENTIAL_HELPER" ]]; then
   git config --global credential.helper "$GIT_CREDENTIAL_HELPER"
   ok "Git credential helper set to Windows GCM."
 else
-  warn "GCM not configured - set git credential.helper manually for HTTPS work repos."
+  warn "GCM not configured - set git credential.helper manually"
 fi
 
 log "PHASE 8 DONE: git configuration"
