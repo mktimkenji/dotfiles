@@ -107,7 +107,7 @@ log "PHASE 6 DONE: dev toolchain"
 phase "Phase 7 - CLI tools (dnf)"
 
 CLI_PKGS=(
-  zsh stow
+  zsh stow putty
   ripgrep fzf fd zoxide
   tealdeer chafa eza bat
   btop jq wl-clipboard
