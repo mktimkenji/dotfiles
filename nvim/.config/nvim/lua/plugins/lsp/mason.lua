@@ -30,6 +30,7 @@ return {
         "lemminx",
         "lua_ls",
         "marksman",
+        "powershell_es",
         "pyright",
         "rust_analyzer",
         "sqlls",

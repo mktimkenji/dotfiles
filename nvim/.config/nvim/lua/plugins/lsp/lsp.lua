@@ -98,6 +98,18 @@ return {
       },
     })
 
+    vim.lsp.config("powershell_es", {
+      bundle_path = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services",
+      filetypes = { "ps1", "psm1", "psd1" },
+      settings = {
+        powershell = {
+          codeFormatting = {
+            Preset = "OTBS",
+          },
+        },
+      },
+    })
+
     vim.lsp.config("pyright", {
       settings = {
         python = {
