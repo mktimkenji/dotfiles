@@ -196,7 +196,7 @@ if ($userCheckCode -ne 0) {
 
     # Disable automount (suppresses failed mount errors for non-NTFS drives),
     # register only C: via fstab so WSL still has access to Windows files.
-    $WslConf = "[user]\ndefault=$WslUser\n\n[automount]\nenabled=false\nmountFsTab=true\n"
+    $WslConf = "[user]\ndefault=$WslUser\n\n[automount]\nenabled=false\nmountFsTab=true\n\n[boot]\nsystemd=true\n"
     wsl -d $WslDistro -u root -- bash -c "printf '$WslConf' > /etc/wsl.conf"
     wsl -d $WslDistro -u root -- bash -c `
         "mkdir -p /mnt/c && echo 'C: /mnt/c drvfs defaults,uid=1000,gid=1000,metadata 0 0' >> /etc/fstab"
