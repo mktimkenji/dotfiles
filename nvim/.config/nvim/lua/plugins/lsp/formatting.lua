@@ -17,7 +17,7 @@ return {
 
         -- Markup / Config
         html = { "prettier" },
-        xml = { "prettier" },
+        xml = { "lemminx" },
         yaml = { "prettier" },
         markdown = { "prettier" },
         toml = { "taplo" },
