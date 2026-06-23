@@ -6,7 +6,6 @@ return {
     local jdtls = require("jdtls")
     local jdtls_setup = require("jdtls.setup")
 
-    -- JAVA_HOME env var → derive from java executable on PATH
     local function find_java_runtime()
       local java_home = os.getenv("JAVA_HOME")
       if java_home then
@@ -18,6 +17,37 @@ return {
       end
       vim.notify("jdtls: could not detect Java runtime. Set JAVA_HOME.", vim.log.levels.WARN)
       return nil
+    end
+
+    -- Derive the jdtls runtime name (e.g. "JavaSE-21") from whatever java is
+    -- active right now. Works with sdkman, jabba, asdf, or a plain JAVA_HOME.
+    local function get_java_se_name(java_home)
+      local java_exec = java_home and (java_home .. "/bin/java") or vim.fn.exepath("java")
+      local handle = io.popen(java_exec .. " -version 2>&1")
+      if not handle then
+        return "JavaSE-25"
+      end
+      local output = handle:read("*a")
+      handle:close()
+
+      -- version string is always inside double-quotes: "21.0.3", "1.8.0_392", …
+      local version_str = output:match('"([%d%.]+)"')
+      if not version_str then
+        return "JavaSE-25"
+      end
+
+      local major = tonumber(version_str:match("^(%d+)"))
+      if not major then
+        return "JavaSE-25"
+      end
+
+      if major == 1 then
+        -- Legacy format: 1.8.x → JavaSE-1.8
+        local minor = tonumber(version_str:match("^%d+%.(%d+)"))
+        return minor and ("JavaSE-1." .. minor) or "JavaSE-1.8"
+      else
+        return "JavaSE-" .. major
+      end
     end
 
     local function get_os_config()
@@ -52,6 +82,10 @@ return {
       local bundles = {}
       vim.list_extend(bundles, java_debug_bundle)
       vim.list_extend(bundles, java_test_bundle)
+
+      -- Resolve once per config build
+      local java_home = find_java_runtime()
+      local java_se_name = get_java_se_name(java_home)
 
       return {
         cmd = {
@@ -116,8 +150,8 @@ return {
             configuration = {
               runtimes = {
                 {
-                  name = "JavaSE-25",
-                  path = find_java_runtime(),
+                  name = java_se_name,
+                  path = java_home,
                   default = true,
                 },
               },
@@ -167,7 +201,6 @@ return {
       end,
     })
 
-    -- initial attach for the buffer that triggered this plugin load
     jdtls.start_or_attach(get_config())
   end,
 }
