@@ -17,7 +17,7 @@ return {
 
         -- Markup / Config
         html = { "prettier" },
-        xml = { "lemminx" },
+        -- xml = { "lemminx" }, automatically handled through lsp
         yaml = { "prettier" },
         markdown = { "prettier" },
         toml = { "taplo" },
