@@ -19,8 +19,7 @@ return {
       return nil
     end
 
-    -- Derive the jdtls runtime name (e.g. "JavaSE-21") from whatever java is
-    -- active right now. Works with sdkman, jabba, asdf, or a plain JAVA_HOME.
+    -- Derive the jdtls runtime name dynamically
     local function get_java_se_name(java_home)
       local java_exec = java_home and (java_home .. "/bin/java") or vim.fn.exepath("java")
       local handle = io.popen(java_exec .. " -version 2>&1")
@@ -30,7 +29,6 @@ return {
       local output = handle:read("*a")
       handle:close()
 
-      -- version string is always inside double-quotes: "21.0.3", "1.8.0_392", …
       local version_str = output:match('"([%d%.]+)"')
       if not version_str then
         return "JavaSE-25"
