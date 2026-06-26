@@ -131,6 +131,7 @@ alias gd="git diff"
 alias gco="git checkout"
 alias gn="git checkout -b"
 alias gb="git branch"
+alias gbd='git branch | grep -vE "^\*?\s*(main|master)$" | xargs git branch -D'
 alias gst="git stash"
 
 # ==========================================
