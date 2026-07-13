@@ -92,12 +92,29 @@ DEV_PKGS=(
   docker
 )
 
+# Oracle Instant Client — installed via direct URL, checked via package name
+ORACLE_IC_VERSION="23.9.0.25.07-1.el9"
+ORACLE_IC_BASE_URL="https://yum.oracle.com/repo/OracleLinux/OL9/oracle/instantclient23/x86_64/getPackage"
+declare -A ORACLE_PKGS=(
+  ["oracle-instantclient-basic"]="${ORACLE_IC_BASE_URL}/oracle-instantclient-basic-${ORACLE_IC_VERSION}.x86_64.rpm"
+  ["oracle-instantclient-sqlplus"]="${ORACLE_IC_BASE_URL}/oracle-instantclient-sqlplus-${ORACLE_IC_VERSION}.x86_64.rpm"
+)
+
 for pkg in "${DEV_PKGS[@]}"; do
   if dnf_installed "$pkg"; then
     skip "$pkg already installed."
   else
     sudo dnf install -y "$pkg"
     ok "$pkg installed."
+  fi
+done
+
+for name in "${!ORACLE_PKGS[@]}"; do
+  if dnf_installed "$name"; then
+    skip "$name already installed."
+  else
+    sudo dnf install -y "${ORACLE_PKGS[$name]}"
+    ok "$name installed."
   fi
 done
 
