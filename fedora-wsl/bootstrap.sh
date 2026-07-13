@@ -118,6 +118,23 @@ for name in "${!ORACLE_PKGS[@]}"; do
   fi
 done
 
+# SQLPlus glogin.sql
+GLOGIN_SQL="/usr/lib/oracle/23/client64/lib/glogin.sql"
+
+if sudo test -f "$GLOGIN_SQL" && sudo grep -qF "SET COLSEP '|'" "$GLOGIN_SQL" 2>/dev/null; then
+  skip "glogin.sql already configured."
+else
+  sudo tee -a "$GLOGIN_SQL" >/dev/null <<'EOF'
+SET PAGESIZE 50000
+SET LINESIZE 32767
+SET TRIMSPOOL ON
+SET WRAP OFF
+SET FEEDBACK OFF
+SET COLSEP '|'
+EOF
+  ok "glogin.sql configured at $GLOGIN_SQL."
+fi
+
 log "PHASE 6 DONE: dev toolchain"
 
 # ── Phase 7: CLI tools (dnf) ──────────────────────────────────────────────────
