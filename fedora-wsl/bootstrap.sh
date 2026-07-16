@@ -90,6 +90,8 @@ DEV_PKGS=(
   rustup
   openssl openssl-devel
   docker
+  webkit2gtk4.1-devel
+  librsvg2-devel
 )
 
 # Oracle Instant Client — installed via direct URL, checked via package name
