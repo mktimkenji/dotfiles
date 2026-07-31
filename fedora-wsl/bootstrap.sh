@@ -92,6 +92,7 @@ DEV_PKGS=(
   docker
   webkit2gtk4.1-devel
   librsvg2-devel
+  xorg-x11-server-Xvfb
 )
 
 # Oracle Instant Client — installed via direct URL, checked via package name
