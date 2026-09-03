@@ -73,7 +73,7 @@ return {
         { trimempty = true }
       )
 
-      local java_test_path = mason_path .. "packages/java-test"
+      local java_test_path = mason_path .. "/packages/java-test"
       local java_test_bundle =
         vim.split(vim.fn.glob(java_test_path .. "/extension/server/*.jar"), "\n", { trimempty = true })
 
@@ -198,7 +198,5 @@ return {
         jdtls.start_or_attach(get_config())
       end,
     })
-
-    jdtls.start_or_attach(get_config())
   end,
 }
